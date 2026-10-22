@@ -19,7 +19,6 @@ La aplicación expone una **API REST con respuestas JSON**. Se puede consumir de
 - [Reglas de negocio](#reglas-de-negocio)
 - [Errores HTTP](#errores-http)
 - [Pruebas](#pruebas)
-- [Incidencia conocida](#incidencia-conocida)
 - [Solución de problemas](#solución-de-problemas)
 - [Límites y siguientes mejoras](#límites-y-siguientes-mejoras)
 
@@ -627,6 +626,7 @@ Reportes: `target/surefire-reports/`. Los reportes locales revisados al preparar
 | `PedidoServiceTest` | Cancelación que repone inventario una sola vez. |
 | `PedidoServiceTest` | Rechazo de productos inactivos. |
 | `PedidoServiceTest` | Rechazo de productos repetidos y rollback. |
+| `PedidoServiceTest` | Cálculo correcto del total y descuento de stock en un pedido con múltiples productos. |
 
 Son pruebas con contexto Spring y persistencia H2. No constituyen cobertura completa de endpoints, serialización, restricciones específicas de MySQL ni concurrencia. Tampoco comprueban un pedido exitoso con varios productos, lo que explica la incidencia siguiente.
 
@@ -646,34 +646,6 @@ Son pruebas con contexto Spring y persistencia H2. No constituyen cobertura comp
 | Cancelar dos veces | 200 y luego 409; reposición única. |
 
 Al probar fallos, no utilices scripts que exijan 201 en todas las respuestas. Duplica las solicitudes de prueba y asigna la expectativa adecuada.
-
-## Incidencia conocida
-
-**Cálculo del total en pedidos exitosos con varios productos.** La revisión del código local detectó esta expresión en `PedidoService.crear`:
-
-```java
-total = total.add(p.getPrecio())
-        .multiply(BigDecimal.valueOf(item.cantidad()));
-```
-
-Esta expresión multiplica también el total acumulado. Por ejemplo, una línea de 100 × 2 seguida de otra de 50 × 3 produce 750 en lugar de 350. Con una sola línea puede dar el resultado correcto, por eso las pruebas existentes no lo detectan.
-
-La corrección pendiente es sumar el subtotal de cada detalle:
-
-```java
-total = total.add(
-        p.getPrecio().multiply(BigDecimal.valueOf(item.cantidad()))
-);
-```
-
-Antes de dar por resuelta la incidencia:
-
-1. Agregar una prueba con dos productos distintos: 100 × 2 y 50 × 3.
-2. Exigir total 350 y la disminución correcta de ambos stocks.
-3. Corregir la expresión y ejecutar toda la suite.
-4. Reconstruir el JAR y repetir el caso por HTTP.
-
-Este README documenta el hallazgo; no implica que la corrección ya esté aplicada. Los pedidos almacenados antes de corregirlo no se recalculan automáticamente.
 
 ## Solución de problemas
 
@@ -701,16 +673,15 @@ Si el contexto no inicia, busca la primera causa relevante en las líneas `Cause
 
 Esta versión está orientada al aprendizaje y al uso local. Antes de publicarla para usuarios reales se requiere ampliar su diseño:
 
-1. Resolver y probar el cálculo de pedidos con múltiples productos.
-2. Incorporar autenticación, autorización y asociación del pedido con el cliente autenticado.
-3. Sustituir `ddl-auto=update` por migraciones versionadas y validación del esquema.
-4. Registrar movimientos y responsables de los ajustes de inventario.
-5. Añadir claves de idempotencia para no duplicar compras ante reintentos.
-6. Probar transacciones simultáneas con MySQL, por ejemplo mediante Testcontainers.
-7. Añadir pruebas HTTP y documentación OpenAPI; actualmente no se incluye Swagger UI.
-8. Definir una política de reactivación de productos y de cambios de estado de pedidos.
-9. Añadir un frontend y la configuración CORS que requiera su origen; no existe una configuración CORS específica en esta versión.
-10. Preparar gestión de secretos, HTTPS, observabilidad, copias de seguridad y permisos de base apropiados al despliegue.
+1. Incorporar autenticación, autorización y asociación del pedido con el cliente autenticado.
+2. Sustituir `ddl-auto=update` por migraciones versionadas y validación del esquema.
+3. Registrar movimientos y responsables de los ajustes de inventario.
+4. Añadir claves de idempotencia para no duplicar compras ante reintentos.
+5. Probar transacciones simultáneas con MySQL, por ejemplo mediante Testcontainers.
+6. Añadir pruebas HTTP y documentación OpenAPI; actualmente no se incluye Swagger UI.
+7. Definir una política de reactivación de productos y de cambios de estado de pedidos.
+8. Añadir un frontend y la configuración CORS que requiera su origen; no existe una configuración CORS específica en esta versión.
+9. Preparar gestión de secretos, HTTPS, observabilidad, copias de seguridad y permisos de base apropiados al despliegue.
 
 No hay un archivo de licencia definido como parte de este README. El responsable del repositorio debe elegirlo antes de distribuir el proyecto con condiciones de reutilización específicas.
 
