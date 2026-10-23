@@ -4,8 +4,8 @@ Backend de una tienda desarrollado como proyecto de aprendizaje de Java, Spring 
 
 La aplicación expone una **API REST con respuestas JSON**. Se puede consumir desde Postman, otro cliente HTTP o una futura interfaz web. No incluye una tienda visual: abrir `/` en el navegador puede devolver 404 porque esa ruta no está implementada.
 
-> **Estado actual:** el proyecto compila y dispone de un JAR ejecutable. Los reportes locales revisados registran 7 pruebas correctas. Existe una incidencia identificada en el cálculo de pedidos con varios productos; revisa [Incidencia conocida](#incidencia-conocida) antes de utilizar ese flujo.
-
+> **Estado actual:** el proyecto compila y dispone de un JAR ejecutable. La suite automatizada registra 8 pruebas correctas, sin fallos, errores ni pruebas omitidas. El cálculo de pedidos con múltiples productos está implementado y cubierto por pruebas automatizadas.
+ 
 ## Índice
 
 - [Funcionalidades y alcance](#funcionalidades-y-alcance)
