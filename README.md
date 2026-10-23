@@ -615,7 +615,7 @@ Para ejecutar únicamente las pruebas de pedidos:
 .\mvnw.cmd '-Dtest=PedidoServiceTest' test
 ```
 
-Reportes: `target/surefire-reports/`. Los reportes locales revisados al preparar este README registran **7 pruebas, 0 fallos, 0 errores y 0 omitidas**:
+Reportes: `target/surefire-reports/`. Los reportes locales revisados al preparar este README registran **8 pruebas, 0 fallos, 0 errores y 0 omitidas**:
 
 | Clase | Caso |
 |---|---|
@@ -628,7 +628,9 @@ Reportes: `target/surefire-reports/`. Los reportes locales revisados al preparar
 | `PedidoServiceTest` | Rechazo de productos repetidos y rollback. |
 | `PedidoServiceTest` | Cálculo correcto del total y descuento de stock en un pedido con múltiples productos. |
 
-Son pruebas con contexto Spring y persistencia H2. No constituyen cobertura completa de endpoints, serialización, restricciones específicas de MySQL ni concurrencia. Tampoco comprueban un pedido exitoso con varios productos, lo que explica la incidencia siguiente.
+Son pruebas con contexto Spring y persistencia H2. Cubren reglas principales del servicio de pedidos, incluyendo cálculo de totales, actualización de inventario, rollback, cancelación y validaciones de negocio. También comprueban el cálculo correcto de un pedido exitoso con múltiples productos.
+
+No constituyen cobertura completa de endpoints HTTP, serialización, restricciones específicas de MySQL ni concurrencia.
 
 ### Casos manuales recomendados
 
